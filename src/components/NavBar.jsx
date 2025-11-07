@@ -1,9 +1,12 @@
-import React from 'react';
+import React, {useContext, useState} from 'react';
 import logo from '../assets/banana-01.png';
 import { useNavigate, Link } from 'react-router-dom';
+import {AuthContext} from '../context/AuthContext';
+
 
 function NavBar() {
   const navigate = useNavigate();
+  const data  = useContext(AuthContext);
 
   return (
     <nav>
@@ -13,6 +16,7 @@ function NavBar() {
             <h3>
               Banana Security
             </h3>
+            {console.log(data)}
           </span>
         </Link>
 
