@@ -4,7 +4,10 @@ import {useNavigate} from 'react-router-dom';
 export const AuthContext = createContext({});
 
 function AuthProvider({children}) {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState({
+        isAuth: false,
+        user: null,
+    });
     const navigate = useNavigate();
 
     function login() {
@@ -20,7 +23,8 @@ function AuthProvider({children}) {
     }
 
     const data = {
-        isAuth: isAuthenticated,
+        isAuth: isAuthenticated.isAuth,
+        user: isAuthenticated.user,
         login: login,
         logout: logout,
     };
