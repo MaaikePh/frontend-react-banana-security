@@ -1,13 +1,30 @@
 import React, {useContext} from 'react';
 import {Link} from 'react-router-dom';
 import {AuthContext} from '../context/AuthContext';
+import InputComponent from '../components/InputComponent';
+import {useForm} from 'react-hook-form';
+import axios from 'axios';
 
 function SignIn() {
     const {login} = useContext(AuthContext);
+    const {register, handleSubmit, formState: {errors}} = useForm();
 
-    function handleSubmit(e) {
-        e.preventDefault();
-        login();
+    async function handleFormSubmit(data) {
+
+        try {
+            const response = await axios.post('https://novi-backend-api-wgsgz.ondigitalocean.app/api/login', {
+                email: data.email,
+                password: data.password,
+            }, {
+                headers: {
+                    'novi-education-project-id': '07470393-2b91-4dbf-92b8-976e6532490b',
+                }
+                });
+            console.log(response.data);
+            login(response.data);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     return (
@@ -16,9 +33,43 @@ function SignIn() {
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab alias cum debitis dolor dolore fuga id
                 molestias qui quo unde?</p>
 
-            <form onSubmit={handleSubmit}>
-                <p>*invoervelden*</p>
-                <button type='submit'>Inloggen</button>
+            <form onSubmit={handleSubmit(handleFormSubmit)}>
+
+                <InputComponent
+                    inputId='email-field'
+                    inputLabel='Email:'
+                    inputName='email'
+                    inputType='text'
+                    validationRules={{
+                        required: {
+                            value: true,
+                            message: '*E-mailadres is vereist',
+                        },
+                        validate: (value) => String(value).includes('@') || '*Voer een geldig e-mailadres in',
+                    }}
+                    register={register}
+                    errors={errors}
+                />
+
+                <InputComponent
+                    inputId='password-field'
+                    inputLabel='Wachtwoord:'
+                    inputName='password'
+                    inputType='password'
+                    validationRules={{
+                        required: {
+                            value: true,
+                            message: '*Wachtwoord is vereist',
+                        }
+                    }}
+                    register={register}
+                    errors={errors}
+                />
+
+                <button type='submit'>
+                    Inloggen
+                </button>
+
             </form>
 
             <p>Heb je nog geen account? <Link to='/signup'>Registreer</Link> je dan eerst.</p>

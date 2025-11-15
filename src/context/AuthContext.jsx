@@ -10,8 +10,16 @@ function AuthProvider({children}) {
     });
     const navigate = useNavigate();
 
-    function login() {
-        setIsAuthenticated(true);
+    function login(userDetails) {
+        console.log(userDetails);
+        localStorage.setItem('token', userDetails.token);
+        setIsAuthenticated({
+            isAuth: true,
+            user: {
+                email: userDetails.email,
+                roles: userDetails.roles,
+            }
+            });
         console.log('Gebruiker is ingelogd!');
         navigate('/profile');
     }

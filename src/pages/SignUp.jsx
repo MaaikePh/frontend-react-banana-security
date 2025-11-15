@@ -1,13 +1,36 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {useForm} from 'react-hook-form';
 import InputComponent from '../components/InputComponent';
+import axios from 'axios';
 
 function SignUp() {
-    const {register, handleSubmit, formState: {errors}} = useForm();
+    const {register, handleSubmit, formState: {errors}, reset} = useForm();
+    const [error, toggleError] = React.useState(false);
+    const [loading, toggleLoading] = React.useState(false);
+    const navigate = useNavigate();
 
-    function handleFormSubmit(data) {
-        console.log(data);
+    async function handleFormSubmit(data) {
+        toggleLoading(true);
+        try {
+            const response = await axios.post('https://novi-backend-api-wgsgz.ondigitalocean.app/api/users', {
+                email: data.email,
+                password: data.password,
+                roles: ['user']
+            }, {
+                headers: {
+                    'novi-education-project-id': '07470393-2b91-4dbf-92b8-976e6532490b',
+                }
+                });
+            console.log(response.data);
+            reset();
+            toggleLoading(false);
+            navigate('/signin');
+        } catch(error) {
+            console.error(error);
+            toggleError(true);
+            toggleLoading(false);
+        }
     }
 
     return (
@@ -42,7 +65,7 @@ function SignUp() {
                     inputId='password-field'
                     inputLabel='Wachtwoord:'
                     inputName='password'
-                    inputType='text'
+                    inputType='password'
                     validationRules={{
                         required: {
                             value: true,
@@ -68,9 +91,11 @@ function SignUp() {
                     errors={errors}
                 />
                 
-                <button type='submit'>
+                <button type='submit' disabled={loading===true}>
                     Versturen
                 </button>
+
+                {error && <p>Er is helaas iets misgegaan bij het verzenden. Probeer het opnieuw.</p>}
 
             </form>
 
