@@ -2,6 +2,7 @@ import {createContext, useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {jwtDecode} from 'jwt-decode';
 import axios from 'axios';
+import isTokenValid from '../helpers/isTokenValid';
 
 export const AuthContext = createContext({});
 
@@ -12,22 +13,11 @@ function AuthProvider({children}) {
         status: 'pending',
     });
 
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-
-        async function fetchUser() {
-            if (!token) {
-                setIsAuthenticated({
-                    isAuth: false,
-                    user: null,
-                    status: 'done'
-            });
-                return;
-        }
+    async function fetchUserByToken(token) {
 
         try {
             const decodedToken = jwtDecode(token);
-            const userId = decodedToken.id;
+            const userId = decodedToken.userId;
 
             const response = await axios.get(`https://novi-backend-api-wgsgz.ondigitalocean.app/api/users/${userId}`, {
                     headers: {
@@ -41,7 +31,7 @@ function AuthProvider({children}) {
                 isAuth: true,
                 user: {
                     id: response.data.id,
-                    username: response.data.username,
+                    username: localStorage.getItem('username') ?? 'Onbekend',
                     email: response.data.email,
                     roles: response.data.roles,
                 },
@@ -56,28 +46,43 @@ function AuthProvider({children}) {
                 user: null,
                 status: 'done',
             })
-          }
+        }
+    }
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+
+        console.log('Context wordt gerefresht!');
+
+            if (!token || !isTokenValid(token)) {
+
+                localStorage.removeItem('token');
+
+                setIsAuthenticated({
+                    isAuth: false,
+                    user: null,
+                    status: 'done'
+            });
+                return;
         }
 
-        fetchUser();
+        fetchUserByToken(token);
     }, []);
 
     const navigate = useNavigate();
 
-    function login(userDetails) {
+    async function login(userDetails) {
         console.log(userDetails);
 
         localStorage.setItem('token', userDetails.token);
 
         setIsAuthenticated({
-            isAuth: true,
-            user: {
-                username: userDetails.username,
-                email: userDetails.email,
-                roles: userDetails.roles,
-            },
-            status: 'done',
+            isAuth: false,
+            user: null,
+            status: 'pending',
             });
+
+        await fetchUserByToken(userDetails.token);
 
         console.log('Gebruiker is ingelogd!');
 
@@ -85,6 +90,10 @@ function AuthProvider({children}) {
     }
 
     function logout() {
+
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+
         setIsAuthenticated({
             isAuth: false,
             user: null,

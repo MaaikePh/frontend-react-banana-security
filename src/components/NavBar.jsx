@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import logo from '../assets/banana-01.png';
 import {Link, useNavigate} from 'react-router-dom';
 import {AuthContext} from '../context/AuthContext';
@@ -8,7 +8,9 @@ function NavBar() {
     const navigate = useNavigate();
     const {isAuth, logout} = useContext(AuthContext);
 
-    console.log('IsAuth status:', isAuth);
+    useEffect(() => {
+        console.log('IsAuth status:', isAuth);
+    }, [isAuth]);
 
     return (
         <nav>

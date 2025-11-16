@@ -10,6 +10,7 @@ function SignIn() {
     const {register, handleSubmit, formState: {errors}} = useForm();
 
     async function handleFormSubmit(data) {
+        const controller = new AbortController();
 
         try {
             const response = await axios.post('https://novi-backend-api-wgsgz.ondigitalocean.app/api/login', {
@@ -18,13 +19,20 @@ function SignIn() {
             }, {
                 headers: {
                     'novi-education-project-id': '07470393-2b91-4dbf-92b8-976e6532490b',
-                }
+                },
+                signal: controller.signal,
                 });
-            console.log(response.data);
+            console.log("Received login response:", response.data);
             login(response.data);
         } catch (error) {
-            console.error(error);
+            if (axios.isCancel(error)) {
+                console.log('Signin canceled');
+            } else {
+                console.error(error);
+            }
         }
+
+        return controller.abort();
     }
 
     return (
